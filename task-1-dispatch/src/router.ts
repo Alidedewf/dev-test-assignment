@@ -12,6 +12,12 @@ export function assignBranch(order: Order, branches: Branch[]): Assignment {
   if (own.length === 1) {
     return { orderId: order.id, branchId: own[0].id, rule: 'single' };
   }
+  
+  const pointId = order.pickupPointId;
+  if (pointId) {
+    const bPoint = own.find((b) => b.pickupPointIds.includes(pointId));
+     if(bPoint) return { orderId: order.id, branchId: bPoint.id, rule: 'pickup_point' };
+  }
 
   // TODO: pickup_point, city
 
