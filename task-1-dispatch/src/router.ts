@@ -1,12 +1,34 @@
 import type { Assignment, Branch, Order } from './types.ts';
 import { distanceKm } from './geo.ts';
 
-export function assignBranch(order: Order, branches: Branch[]): Assignment {
+
+export function almatyDate(iso: string): string {
+  const time = new Date(iso).getTime()
+  const shifted = new Date(time + 5 * 60 * 60 * 1000)
+  return shifted.toISOString().slice(0, 10)
+}
+
+export function assignBranch(
+  order: Order,
+  branches: Branch[],
+  isFull: (b: Branch) => boolean = () => false,
+): Assignment {
+    const picked = pickByRules(order, branches);
+    if (picked.rule === 'manual' || picked.branchId === null) return picked;
+    const branch = branches.find((b) => b.id === picked.branchId);
+    if (branch && !isFull(branch)) return picked;
+    const free = branches.filter((b) => b.storeId === order.storeId && b.active && !isFull(b));
+    const nearest = findNearest(order, free);
+    if (nearest) return { orderId: order.id, branchId: nearest.id, rule: 'geo' };
+    return { orderId: order.id, branchId: null, rule: 'unassigned' };
+}
+
+
+function pickByRules(order: Order, branches: Branch[]): Assignment {
   const own = branches.filter((b) => b.storeId === order.storeId && b.active);
   const sameCity = own.filter((b) => b.city == order.city)
   const pointId = order.pickupPointId;
  
-  
 
 
   if (order.manualBranchId) {
