@@ -63,7 +63,17 @@ test('geo: без координат заказ не распределяетс�
   assert.equal(res.rule, 'unassigned');
 });
 
-test.todo('pickup_point: пункт выдачи закреплён за филиалом');
-test.todo('city: в городе заказа один филиал магазина');
+test('pickup_point: пункт выдачи закреплён за филиалом', () => {
+  const near = branch({id: 'b-near', lat: 43.25, lon: 76.93 });
+  const withPoint = branch({ id: 'b-point', lat: 43.30, lon: 77.00, pickupPointIds: ['pp-7']})
+  const res = assignBranch(order({ pickupPointId: 'pp-7' }), [near, withPoint]);
+  assert.deepEqual(res, { orderId: 'o-1', branchId: 'b-point', rule: 'pickup_point' });
+});
+test('city: в городе заказа один филиал магазина', () => {
+  const inCity = branch({ id: 'b-city', city: 'Конаев', lat: 43.87, lon: 77.07 });
+  const other  = branch({ id: 'b-other', city: 'Алматы', lat: 43.2567, lon: 76.9286 });
+  const res = assignBranch(order({ city: 'Конаев', lat: 43.25, lon: 76.92 }), [inCity, other]);
+  assert.deepEqual(res, { orderId: 'o-1', branchId: 'b-city', rule: 'city' });
+});
 test.todo('geo: если в городе несколько филиалов, выбирается ближайший из них');
 test.todo('лимит: заполненный филиал пропускается');
