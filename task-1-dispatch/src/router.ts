@@ -5,7 +5,7 @@ export function assignBranch(order: Order, branches: Branch[]): Assignment {
   const own = branches.filter((b) => b.storeId === order.storeId && b.active);
   const sameCity = own.filter((b) => b.city == order.city)
   const pointId = order.pickupPointId;
-
+  const nearest = findNearest(order, own);
 
 
   if (order.manualBranchId) {
@@ -26,7 +26,6 @@ export function assignBranch(order: Order, branches: Branch[]): Assignment {
     return { orderId: order.id, branchId: sameCity[0].id, rule: 'city' };
   }
 
-  const nearest = findNearest(order, own);
   if (nearest) return { orderId: order.id, branchId: nearest.id, rule: 'geo' };
 
   return { orderId: order.id, branchId: null, rule: 'unassigned' };
