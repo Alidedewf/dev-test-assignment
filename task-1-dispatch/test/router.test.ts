@@ -75,5 +75,11 @@ test('city: в городе заказа один филиал магазина'
   const res = assignBranch(order({ city: 'Конаев', lat: 43.25, lon: 76.92 }), [inCity, other]);
   assert.deepEqual(res, { orderId: 'o-1', branchId: 'b-city', rule: 'city' });
 });
-test.todo('geo: если в городе несколько филиалов, выбирается ближайший из них');
-test.todo('лимит: заполненный филиал пропускается');
+test('лимит: заполненный филиал пропускается', () => {
+  const res = assignBranch(
+    order({ city: 'Конаев', lat: 43.25, lon: 76.93 }),
+    [almaty, astana],
+    (b) => b.id === 'b-ala',
+  );
+  assert.deepEqual(res, { orderId: 'o-1', branchId: 'b-ast', rule: 'geo' });
+});
